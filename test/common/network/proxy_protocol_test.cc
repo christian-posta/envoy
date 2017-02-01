@@ -1,5 +1,6 @@
 #include "common/buffer/buffer_impl.h"
 #include "common/event/dispatcher_impl.h"
+#include "common/network/address_impl.h"
 #include "common/network/listener_impl.h"
 #include "common/network/utility.h"
 #include "common/stats/stats_impl.h"
@@ -19,7 +20,8 @@ public:
   ProxyProtocolTest()
       : socket_(uint32_t(1234), true), listener_(connection_handler_, dispatcher_, socket_,
                                                  callbacks_, stats_store_, true, true, false) {
-    conn_ = dispatcher_.createClientConnection("tcp://127.0.0.1:1234");
+    conn_ = dispatcher_.createClientConnection(
+        Network::Address::InstancePtr{new Network::Address::Ipv4Instance("127.0.0.1", 1234)});
     conn_->addConnectionCallbacks(connection_callbacks_);
     conn_->connect();
   }
@@ -48,7 +50,7 @@ TEST_F(ProxyProtocolTest, Basic) {
 
   EXPECT_CALL(callbacks_, onNewConnection_(_))
       .WillOnce(Invoke([&](ConnectionPtr& conn) -> void {
-        ASSERT_EQ("1.2.3.4", Network::Utility::hostFromUrl(conn->remoteAddress()));
+        ASSERT_EQ("1.2.3.4", conn->remoteAddress().ip()->addressAsString());
         conn->addReadFilter(read_filter_);
         accepted_connection = std::move(conn);
       }));
@@ -72,7 +74,7 @@ TEST_F(ProxyProtocolTest, Fragmented) {
 
   EXPECT_CALL(callbacks_, onNewConnection_(_))
       .WillOnce(Invoke([&](ConnectionPtr& conn) -> void {
-        ASSERT_EQ("255.255.255.255", Network::Utility::hostFromUrl(conn->remoteAddress()));
+        ASSERT_EQ("255.255.255.255", conn->remoteAddress().ip()->addressAsString());
         read_filter_.reset(new MockReadFilter());
         conn->addReadFilter(read_filter_);
         conn->close(ConnectionCloseType::NoFlush);
@@ -88,7 +90,7 @@ TEST_F(ProxyProtocolTest, PartialRead) {
 
   EXPECT_CALL(callbacks_, onNewConnection_(_))
       .WillOnce(Invoke([&](ConnectionPtr& conn) -> void {
-        ASSERT_EQ("255.255.255.255", Network::Utility::hostFromUrl(conn->remoteAddress()));
+        ASSERT_EQ("255.255.255.255", conn->remoteAddress().ip()->addressAsString());
         read_filter_.reset(new MockReadFilter());
         conn->addReadFilter(read_filter_);
         conn->close(ConnectionCloseType::NoFlush);

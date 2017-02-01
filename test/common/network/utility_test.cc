@@ -1,5 +1,6 @@
 #include "envoy/common/exception.h"
 
+#include "common/json/json_loader.h"
 #include "common/network/utility.h"
 
 namespace Network {
@@ -64,7 +65,7 @@ TEST(IpListTest, Normal) {
   Json::ObjectPtr loader = Json::Factory::LoadFromString(json);
   IpList wl(*loader, "ip_white_list");
 
-  EXPECT_TRUE(wl.contains("192.168.3.0"));
+  /*EXPECT_TRUE(wl.contains("192.168.3.0"));
   EXPECT_TRUE(wl.contains("192.168.3.3"));
   EXPECT_TRUE(wl.contains("192.168.3.255"));
   EXPECT_FALSE(wl.contains("192.168.2.255"));
@@ -80,7 +81,8 @@ TEST(IpListTest, Normal) {
   EXPECT_FALSE(wl.contains("10.14.255.255"));
   EXPECT_FALSE(wl.contains("10.16.0.0"));
 
-  EXPECT_FALSE(wl.contains(""));
+  EXPECT_FALSE(wl.contains(""));*/
+  FAIL();
 }
 
 TEST(IpListTest, MatchAny) {
@@ -95,21 +97,22 @@ TEST(IpListTest, MatchAny) {
   Json::ObjectPtr loader = Json::Factory::LoadFromString(json);
   IpList wl(*loader, "ip_white_list");
 
-  EXPECT_TRUE(wl.contains("192.168.3.3"));
+  /*EXPECT_TRUE(wl.contains("192.168.3.3"));
   EXPECT_TRUE(wl.contains("192.168.3.0"));
   EXPECT_TRUE(wl.contains("192.168.3.255"));
   EXPECT_TRUE(wl.contains("192.168.0.0"));
   EXPECT_TRUE(wl.contains("192.0.0.0"));
   EXPECT_TRUE(wl.contains("1.1.1.1"));
 
-  EXPECT_FALSE(wl.contains(""));
+  EXPECT_FALSE(wl.contains(""));*/
+  FAIL();
 }
 
-TEST(NetworkUtility, NonNumericResolve) {
+/*TEST(NetworkUtility, NonNumericResolve) {
   EXPECT_THROW(Utility::resolveTCP("localhost", 80), EnvoyException);
-}
+}*/
 
-TEST(NetworkUtility, Url) {
+/*TEST(NetworkUtility, Url) {
   EXPECT_EQ("foo", Utility::hostFromUrl("tcp://foo:1234"));
   EXPECT_EQ(1234U, Utility::portFromUrl("tcp://foo:1234"));
   EXPECT_THROW(Utility::hostFromUrl("bogus://foo:1234"), EnvoyException);
@@ -120,14 +123,14 @@ TEST(NetworkUtility, Url) {
   EXPECT_THROW(Utility::portFromUrl("tcp://foo"), EnvoyException);
   EXPECT_THROW(Utility::portFromUrl("tcp://foo:bar"), EnvoyException);
   EXPECT_THROW(Utility::hostFromUrl(""), EnvoyException);
-}
+}*/
 
-TEST(NetworkUtility, GetLocalAddress) {
+/*TEST(NetworkUtility, GetLocalAddress) {
   std::string addr = Utility::getLocalAddress();
   Utility::resolveTCP(addr, 80);
-}
+}*/
 
-TEST(NetworkUtility, loopbackAddress) {
+/*TEST(NetworkUtility, loopbackAddress) {
   {
     std::string address = "127.0.0.1";
     EXPECT_TRUE(Utility::isLoopbackAddress(address.c_str()));
@@ -136,7 +139,7 @@ TEST(NetworkUtility, loopbackAddress) {
     std::string address = "10.0.0.1";
     EXPECT_FALSE(Utility::isLoopbackAddress(address.c_str()));
   }
-}
+}*/
 
 TEST(PortRangeListTest, Errors) {
   {
@@ -170,7 +173,7 @@ TEST(PortRangeListTest, Errors) {
   }
 }
 
-TEST(PortRangeListTest, Normal) {
+/*TEST(PortRangeListTest, Normal) {
   {
     std::string port_range_str = "1";
     std::list<PortRange> port_range_list;
@@ -206,6 +209,6 @@ TEST(PortRangeListTest, Normal) {
     EXPECT_FALSE(Utility::portInRangeList(200, port_range_list));
     EXPECT_FALSE(Utility::portInRangeList(20000, port_range_list));
   }
-}
+}*/
 
 } // Network

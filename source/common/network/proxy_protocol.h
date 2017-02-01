@@ -71,6 +71,8 @@ public:
   void newConnection(Event::Dispatcher& dispatcher, int fd, ListenerImpl& listener);
 
 private:
+  static const Address::InstancePtr null_local_address_;
+
   ProxyProtocolStats stats_;
   std::list<std::unique_ptr<ActiveConnection>> connections_;
 };

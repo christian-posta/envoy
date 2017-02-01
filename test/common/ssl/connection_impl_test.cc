@@ -1,5 +1,6 @@
 #include "common/buffer/buffer_impl.h"
 #include "common/json/json_loader.h"
+#include "common/network/address_impl.h"
 #include "common/network/listen_socket_impl.h"
 #include "common/ssl/connection_impl.h"
 #include "common/ssl/context_config_impl.h"
@@ -49,8 +50,9 @@ TEST(SslConnectionImplTest, ClientAuth) {
   Json::ObjectPtr client_ctx_loader = Json::Factory::LoadFromString(client_ctx_json);
   ContextConfigImpl client_ctx_config(*client_ctx_loader);
   ClientContextPtr client_ctx(manager.createSslClientContext(stats_store, client_ctx_config));
-  Network::ClientConnectionPtr client_connection =
-      dispatcher.createSslClientConnection(*client_ctx, "tcp://127.0.0.1:10000");
+  Network::ClientConnectionPtr client_connection = dispatcher.createSslClientConnection(
+      *client_ctx,
+      Network::Address::InstancePtr{new Network::Address::Ipv4Instance("127.0.0.1", 10000)});
   client_connection->connect();
 
   Network::ConnectionPtr server_connection;
@@ -109,8 +111,9 @@ TEST(SslConnectionImplTest, ClientAuthBadVerification) {
   Json::ObjectPtr client_ctx_loader = Json::Factory::LoadFromString(client_ctx_json);
   ContextConfigImpl client_ctx_config(*client_ctx_loader);
   ClientContextPtr client_ctx(manager.createSslClientContext(stats_store, client_ctx_config));
-  Network::ClientConnectionPtr client_connection =
-      dispatcher.createSslClientConnection(*client_ctx, "tcp://127.0.0.1:10000");
+  Network::ClientConnectionPtr client_connection = dispatcher.createSslClientConnection(
+      *client_ctx,
+      Network::Address::InstancePtr{new Network::Address::Ipv4Instance("127.0.0.1", 10000)});
   client_connection->connect();
 
   Network::ConnectionPtr server_connection;
@@ -155,8 +158,8 @@ TEST(SslConnectionImplTest, SslError) {
   Network::ListenerPtr listener = dispatcher.createSslListener(
       connection_handler, *server_ctx, socket, callbacks, stats_store, true, false, false);
 
-  Network::ClientConnectionPtr client_connection =
-      dispatcher.createClientConnection("tcp://127.0.0.1:10000");
+  Network::ClientConnectionPtr client_connection = dispatcher.createClientConnection(
+      Network::Address::InstancePtr{new Network::Address::Ipv4Instance("127.0.0.1", 10000)});
   client_connection->connect();
   Buffer::OwnedImpl bad_data("bad_handshake_data");
   client_connection->write(bad_data);

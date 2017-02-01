@@ -139,7 +139,7 @@ TEST_F(AccessLogImplTest, NoFilter) {
 TEST_F(AccessLogImplTest, UpstreamHost) {
   std::shared_ptr<Upstream::MockClusterInfo> cluster{new Upstream::MockClusterInfo()};
   request_info_.upstream_host_ =
-      std::make_shared<Upstream::HostDescriptionImpl>(cluster, "tcp://10.0.0.5:1234", false, "");
+      std::make_shared<Upstream::HostDescriptionImpl>(cluster, nullptr, false, ""); // fixfix
 
   std::string json = R"EOF(
       {

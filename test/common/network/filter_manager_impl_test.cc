@@ -1,6 +1,7 @@
 #include "common/buffer/buffer_impl.h"
 #include "common/filter/tcp_proxy.h"
 #include "common/filter/ratelimit.h"
+#include "common/network/address_impl.h"
 #include "common/network/filter_manager_impl.h"
 #include "common/stats/stats_impl.h"
 #include "common/upstream/upstream_impl.h"
@@ -35,7 +36,7 @@ public:
   LocalMockFilter(const Upstream::HostDescription* host) : host_(host) {}
   ~LocalMockFilter() {
     // Make sure the upstream host is still valid in the filter destructor.
-    callbacks_->upstreamHost()->url();
+    callbacks_->upstreamHost()->address();
   }
 
 private:
@@ -152,8 +153,10 @@ TEST_F(NetworkFilterManagerTest, RateLimitAndTcpProxy) {
       new NiceMock<Network::MockClientConnection>();
   Upstream::MockHost::MockCreateConnectionData conn_info;
   conn_info.connection_ = upstream_connection;
-  conn_info.host_.reset(
-      new Upstream::HostImpl(cm.cluster_.info_, "tcp://127.0.0.1:80", false, 1, ""));
+  conn_info.host_.reset(new Upstream::HostImpl(
+      cm.cluster_.info_,
+      Network::Address::InstancePtr{new Network::Address::Ipv4Instance("127.0.0.1", 9000)}, false, 1,
+      ""));
   EXPECT_CALL(cm, tcpConnForCluster_("fake_cluster")).WillOnce(Return(conn_info));
 
   request_callbacks->complete(RateLimit::LimitStatus::OK);

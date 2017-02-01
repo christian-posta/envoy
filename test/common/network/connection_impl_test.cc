@@ -1,6 +1,7 @@
 #include "common/buffer/buffer_impl.h"
 #include "common/common/empty_string.h"
 #include "common/event/dispatcher_impl.h"
+#include "common/network/address_impl.h"
 #include "common/network/connection_impl.h"
 #include "common/network/listen_socket_impl.h"
 #include "common/stats/stats_impl.h"
@@ -44,8 +45,11 @@ TEST(ConnectionImplUtility, updateBufferStats) {
 
 TEST(ConnectionImplDeathTest, BadFd) {
   Event::DispatcherImpl dispatcher;
-  EXPECT_DEATH(ConnectionImpl(dispatcher, -1, "tcp://127.0.0.1:0", EMPTY_STRING),
-               ".*assert failure: fd_ != -1.*");
+  EXPECT_DEATH(
+      ConnectionImpl(dispatcher, -1,
+                     Network::Address::InstancePtr{new Network::Address::Ipv4Instance("127.0.0.1")},
+                     nullptr),
+      ".*assert failure: fd_ != -1.*");
 }
 
 struct MockBufferStats {
@@ -68,8 +72,8 @@ TEST(ConnectionImplTest, BufferStats) {
   Network::ListenerPtr listener = dispatcher.createListener(
       connection_handler, socket, listener_callbacks, stats_store, true, false, false);
 
-  Network::ClientConnectionPtr client_connection =
-      dispatcher.createClientConnection("tcp://127.0.0.1:10000");
+  Network::ClientConnectionPtr client_connection = dispatcher.createClientConnection(
+      Network::Address::InstancePtr{new Network::Address::Ipv4Instance("127.0.0.1", 10000)});
   MockConnectionCallbacks client_callbacks;
   client_connection->addConnectionCallbacks(client_callbacks);
   MockBufferStats client_buffer_stats;
@@ -130,7 +134,8 @@ TEST(TcpClientConnectionImplTest, BadConnectNotConnRefused) {
   Event::DispatcherImpl dispatcher;
   // Connecting to 255.255.255.255 will cause a perm error and not ECONNREFUSED which is a
   // different path in libevent. Make sure this doesn't crash.
-  ClientConnectionPtr connection = dispatcher.createClientConnection("tcp://255.255.255.255:1");
+  ClientConnectionPtr connection = dispatcher.createClientConnection(
+      Network::Address::InstancePtr{new Network::Address::Ipv4Instance("255.255.255.255", 1)});
   connection->connect();
   connection->noDelay(true);
   dispatcher.run(Event::Dispatcher::RunType::Block);
@@ -140,7 +145,8 @@ TEST(TcpClientConnectionImplTest, BadConnectConnRefused) {
   Event::DispatcherImpl dispatcher;
   // Connecting to an invalid port on localhost will cause ECONNREFUSED which is a different code
   // path from other errors. Test this also.
-  ClientConnectionPtr connection = dispatcher.createClientConnection("tcp://255.255.255.255:1");
+  ClientConnectionPtr connection = dispatcher.createClientConnection(
+      Network::Address::InstancePtr{new Network::Address::Ipv4Instance("127.0.0.1", 1)});
   connection->connect();
   connection->noDelay(true);
   dispatcher.run(Event::Dispatcher::RunType::Block);

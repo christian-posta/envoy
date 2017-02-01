@@ -129,8 +129,6 @@ TEST(AccessLogFormatterTest, requestInfoFormatter) {
 
   {
     RequestInfoFormatter upstream_format("UPSTREAM_HOST");
-    const std::string host_url = "name";
-    EXPECT_CALL(*request_info.host_, url()).WillOnce(ReturnRef(host_url));
     EXPECT_EQ("name", upstream_format.format(header, header, request_info));
   }
 

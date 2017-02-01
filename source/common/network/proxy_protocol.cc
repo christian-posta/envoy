@@ -1,3 +1,4 @@
+#include "address_impl.h"
 #include "listener_impl.h"
 #include "proxy_protocol.h"
 
@@ -71,8 +72,10 @@ void ProxyProtocol::ActiveConnection::onReadWorker() {
 
   removeFromList(parent_.connections_);
 
-  // TODO: pass in something more meaningful than 0 as remote port and EMPTY_STRING as local_address
-  listener.newConnection(fd, Network::Utility::urlForTcp(remote_address, 0), EMPTY_STRING);
+  // TODO: pass in something more meaningful than 0 as remote port and a null local_address
+  listener.newConnection(
+      fd, Network::Address::InstancePtr{new Network::Address::Ipv4Instance(remote_address)},
+      null_local_address_);
 }
 
 void ProxyProtocol::ActiveConnection::close() {
